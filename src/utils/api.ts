@@ -67,9 +67,9 @@ export const fetchConversion = async (params: {
     });
 
     const responseText = await response.text();
-    const { result, error } = JSON.parse(responseText);
+    const { result, error, success } = JSON.parse(responseText);
 
-    if (error) {
+    if (!success) {
       return error as ConvertedResponseError;
     }
 

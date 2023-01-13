@@ -16,20 +16,22 @@ import Header from "./components/Header";
 import Result from "./components/Result";
 import { fetchConversion, fetchCurrencies } from "./utils/api";
 import { parseInput } from "./utils/parseInput";
-import { ConvertedResponseError } from "./utils/types";
+import { ConvertedResponseError, ParsedInput } from "./utils/types";
 
 const App: FC = () => {
   const [text, setText] = useState("");
-  const [parsedInput, setParsedInput] = useState({
+  const [parsedInput, setParsedInput] = useState<ParsedInput>({
     fromAmount: 0,
     fromCurrency: "",
     toCurrency: "",
   });
   const [error, setError] = useState<string | undefined>();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isConversionLoading, setIsConversionLoading] = useState(false);
+  const [isReverseConversionLoading, setIsReverseConversionLoading] =
+    useState(false);
   const [result, setResult] = useState<number | ConvertedResponseError>();
 
-  const [currencies, setCurrencies] = useState<any>([]);
+  const [currencies, setCurrencies] = useState<any>();
 
   const getCurrencies = async () => {
     try {
@@ -41,8 +43,25 @@ const App: FC = () => {
   };
 
   useEffect(() => {
-    // getCurrencies();
+    getCurrencies();
   }, []);
+
+  const getConversion = async (parsedInput: ParsedInput) => {
+    try {
+      const result = await fetchConversion({
+        ...parsedInput,
+        fromAmount: String(parsedInput.fromAmount),
+      });
+
+      if (typeof result === "number") {
+        setResult(result);
+      } else {
+        setError(result.info);
+      }
+    } catch (error: any) {
+      setError(error?.info ?? error.message);
+    }
+  };
 
   const handleConvert = async () => {
     setError(undefined);
@@ -52,31 +71,26 @@ const App: FC = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsConversionLoading(true);
 
     const parsedInput = parseInput(text);
     setParsedInput(parsedInput);
 
-    try {
-      const result = await fetchConversion({
-        ...parsedInput,
-        fromAmount: String(parsedInput.fromAmount),
-      });
+    await getConversion(parsedInput);
 
-      if (typeof result === "number") {
-        setResult(result);
-      }
-    } catch (error: any) {
-      setError(error?.info ?? error.message);
-    }
-
-    setIsLoading(false);
+    setIsConversionLoading(false);
   };
 
-  const handleReverse = () => {
-    setText(
-      `${parsedInput.toCurrency} ${parsedInput.fromAmount} to ${parsedInput.fromCurrency}`
+  const handleReverse = async () => {
+    setIsReverseConversionLoading(true);
+    const parsedText = parseInput(
+      `${parsedInput.fromAmount} ${parsedInput.toCurrency} to ${parsedInput.fromCurrency}`
     );
+    setParsedInput(parsedText);
+
+    await getConversion(parsedText);
+
+    setIsReverseConversionLoading(false);
   };
 
   return (
@@ -100,8 +114,8 @@ const App: FC = () => {
                     aria-label="convert"
                     icon={<SearchIcon />}
                     onClick={handleConvert}
-                    disabled={isLoading}
-                    isLoading={isLoading}
+                    disabled={isConversionLoading}
+                    isLoading={isConversionLoading}
                   />
                 }
               />
@@ -118,8 +132,10 @@ const App: FC = () => {
             <Result
               fromAmount={parsedInput.fromAmount}
               fromCurrency={currencies[parsedInput.fromCurrency]}
+              isLoading={isReverseConversionLoading}
               result={Number(result)}
               toCurrency={currencies[parsedInput.toCurrency]}
+              handleReverse={handleReverse}
             />
           )}
         </VStack>

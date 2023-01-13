@@ -20,3 +20,9 @@ export type ConvertedResponseError = {
   code: number;
   info: string;
 };
+
+export type ParsedInput = {
+  fromAmount: number;
+  fromCurrency: string;
+  toCurrency: string;
+};

@@ -5,15 +5,19 @@ import { FC } from "react";
 interface ResultProps {
   fromAmount: number;
   fromCurrency: string;
+  isLoading: boolean;
   result: number;
   toCurrency: string;
+  handleReverse: () => void;
 }
 
 const Result: FC<ResultProps> = ({
   fromAmount,
   fromCurrency,
+  isLoading,
   result,
   toCurrency,
+  handleReverse,
 }) => {
   return (
     <Box borderWidth={1} borderRadius="md" w="100%" p={3}>
@@ -28,8 +32,11 @@ const Result: FC<ResultProps> = ({
         <IconButton
           aria-label="reverse"
           bg="transparent"
-          size="lg"
+          disabled={isLoading}
+          isLoading={isLoading}
           icon={<RepeatIcon />}
+          size="lg"
+          onClick={handleReverse}
         />
       </HStack>
     </Box>
