@@ -26,3 +26,11 @@ export type ParsedInput = {
   fromCurrency: string;
   toCurrency: string;
 };
+
+export type Amount = {
+  id: number;
+  fromAmount: number;
+  fromCurrency: string;
+  toCurrency: string;
+  result: number;
+};

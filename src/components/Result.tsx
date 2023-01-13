@@ -22,7 +22,7 @@ const Result: FC<ResultProps> = ({
   return (
     <Box borderWidth={1} borderRadius="md" w="100%" p={3}>
       <HStack justify="space-between">
-        <VStack align="start">
+        <VStack align="start" spacing={0}>
           <Text size="sm">{`${fromAmount} ${fromCurrency}`} equals</Text>
           <Text fontSize="2xl">
             {result} {toCurrency}

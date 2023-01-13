@@ -1,7 +1,7 @@
 import { Converted, ConvertedResponseError } from "./types";
 
 const BASE_URL = "https://api.apilayer.com/";
-const API_KEY = "kBemlfOZaW5GxVLJV9RbHbDiLW3ifm5C";
+const API_KEY = "";
 
 // TODO: what is the response type in the Promise? We should avoid using 'any'
 type API = (params: {
