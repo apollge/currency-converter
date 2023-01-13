@@ -1,12 +1,12 @@
-const BASE_URL = 'https://api.apilayer.com/exchangerates_data';
-const API_KEY = 'REPLACE_WITH_YOUR_API_KEY'
+const BASE_URL = "https://api.apilayer.com/exchangerates_data";
+const API_KEY = process.env.API_KEY;
 
 // TODO: what is the response type in the Promise? We should avoid using 'any'
 type API = (params: {
-  endpoint: string,
+  endpoint: string;
   params: {
-    base?: string,
-  },
+    base?: string;
+  };
 }) => Promise<any>;
 
 const api: API = ({ endpoint, params = {} }) => {
@@ -18,7 +18,10 @@ const api: API = ({ endpoint, params = {} }) => {
 
 export const fetchRates = async (baseCurrency: string) => {
   try {
-    const response = await api({ endpoint: '/latest', params: { base: baseCurrency } });
+    const response = await api({
+      endpoint: "/latest",
+      params: { base: baseCurrency },
+    });
     const responseText = await response.text();
     const { rates, error } = JSON.parse(responseText);
 
@@ -27,7 +30,7 @@ export const fetchRates = async (baseCurrency: string) => {
     }
 
     if (!rates || !Object.keys(rates).length) {
-      throw new Error('Could not fetch rates.');
+      throw new Error("Could not fetch rates.");
     }
 
     return rates;
