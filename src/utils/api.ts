@@ -1,10 +1,12 @@
-const BASE_URL = "https://api.apilayer.com/exchangerates_data";
+import { Converted, ConvertedResponseError } from "./types";
+
+const BASE_URL = "https://api.apilayer.com/";
 const API_KEY = "kBemlfOZaW5GxVLJV9RbHbDiLW3ifm5C";
 
 // TODO: what is the response type in the Promise? We should avoid using 'any'
 type API = (params: {
   endpoint: string;
-  params: {
+  params?: {
     base?: string;
     from?: string;
     to?: string;
@@ -31,7 +33,7 @@ const api: API = ({ endpoint, params = {} }) => {
 export const fetchRates = async (baseCurrency: string) => {
   try {
     const response = await api({
-      endpoint: "/latest",
+      endpoint: "exchangerates_data/latest",
       params: { base: baseCurrency },
     });
     const responseText = await response.text();
@@ -55,12 +57,12 @@ export const fetchConversion = async (params: {
   fromAmount: string;
   fromCurrency: string;
   toCurrency: string;
-}) => {
+}): Promise<Converted["result"] | ConvertedResponseError> => {
   const { fromAmount, fromCurrency, toCurrency } = params;
 
   try {
     const response = await api({
-      endpoint: "/convert",
+      endpoint: "currency_data/convert",
       params: { from: fromCurrency, to: toCurrency, amount: fromAmount },
     });
 
@@ -68,10 +70,33 @@ export const fetchConversion = async (params: {
     const { result, error } = JSON.parse(responseText);
 
     if (error) {
-      throw new Error(error);
+      return error as ConvertedResponseError;
     }
 
     return result;
+  } catch (errorResponse) {
+    throw errorResponse;
+  }
+};
+
+export const fetchCurrencies = async () => {
+  try {
+    const response = await api({
+      endpoint: "currency_data/list",
+    });
+
+    const responseText = await response.text();
+    const { currencies, error } = JSON.parse(responseText);
+
+    if (error) {
+      throw new Error(error);
+    }
+
+    if (!currencies || !Object.keys(currencies).length) {
+      throw new Error("Could not fetch currencies.");
+    }
+
+    return currencies;
   } catch (errorResponse) {
     throw errorResponse;
   }

@@ -9,12 +9,14 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import "./App.css";
 
 import Header from "./components/Header";
-import { fetchConversion } from "./utils/api";
+import Result from "./components/Result";
+import { fetchConversion, fetchCurrencies } from "./utils/api";
 import { parseInput } from "./utils/parseInput";
+import { ConvertedResponseError } from "./utils/types";
 
 const App: FC = () => {
   const [text, setText] = useState("");
@@ -25,32 +27,56 @@ const App: FC = () => {
   });
   const [error, setError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState();
+  const [result, setResult] = useState<number | ConvertedResponseError>();
+
+  const [currencies, setCurrencies] = useState<any>([]);
+
+  const getCurrencies = async () => {
+    try {
+      const result = await fetchCurrencies();
+      setCurrencies(result);
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
+
+  useEffect(() => {
+    // getCurrencies();
+  }, []);
 
   const handleConvert = async () => {
     setError(undefined);
-    setIsLoading(true);
 
     if (!text) {
       setError("Please enter a value");
       return;
     }
 
-    try {
-      const parsedInput = parseInput(text);
-      setParsedInput(parsedInput);
+    setIsLoading(true);
 
+    const parsedInput = parseInput(text);
+    setParsedInput(parsedInput);
+
+    try {
       const result = await fetchConversion({
         ...parsedInput,
         fromAmount: String(parsedInput.fromAmount),
       });
 
-      setResult(result);
+      if (typeof result === "number") {
+        setResult(result);
+      }
     } catch (error: any) {
-      setError(error.message);
+      setError(error?.info ?? error.message);
     }
 
     setIsLoading(false);
+  };
+
+  const handleReverse = () => {
+    setText(
+      `${parsedInput.toCurrency} ${parsedInput.fromAmount} to ${parsedInput.fromCurrency}`
+    );
   };
 
   return (
@@ -88,7 +114,14 @@ const App: FC = () => {
           </VStack>
 
           {/* Result */}
-          {result && <Text>{result}</Text>}
+          {result && (
+            <Result
+              fromAmount={parsedInput.fromAmount}
+              fromCurrency={currencies[parsedInput.fromCurrency]}
+              result={Number(result)}
+              toCurrency={currencies[parsedInput.toCurrency]}
+            />
+          )}
         </VStack>
       </Container>
     </div>
