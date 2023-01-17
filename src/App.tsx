@@ -1,4 +1,4 @@
-import { SearchIcon } from "@chakra-ui/icons";
+import { CloseIcon, RepeatIcon, SearchIcon } from "@chakra-ui/icons";
 import {
   Alert,
   Button,
@@ -14,11 +14,10 @@ import {
 } from "@chakra-ui/react";
 import { FC, useEffect, useState } from "react";
 import "./App.css";
+import Card from "./components/Card";
 
 import Header from "./components/Header";
-import PreviousAmount from "./components/PreviousAmount";
-import Result from "./components/Result";
-import { fetchConversion, fetchCurrencies } from "./utils/api";
+import { fetchConversion, fetchSymbols } from "./utils/api";
 import { parseInput } from "./utils/parseInput";
 import { Amount, ConvertedResponseError, ParsedInput } from "./utils/types";
 
@@ -50,9 +49,9 @@ const App: FC = () => {
     fetchPreviousAmounts();
   }, []);
 
-  const getCurrencies = async () => {
+  const getSymbols = async () => {
     try {
-      const result = await fetchCurrencies();
+      const result = await fetchSymbols();
       setCurrencies(result);
     } catch (error: any) {
       setError(error.message);
@@ -60,7 +59,7 @@ const App: FC = () => {
   };
 
   useEffect(() => {
-    getCurrencies();
+    getSymbols();
   }, []);
 
   const getConversion = async (parsedInput: ParsedInput) => {
@@ -190,13 +189,20 @@ const App: FC = () => {
 
           {/* Result */}
           {result && (
-            <Result
-              fromAmount={parsedInput.fromAmount}
-              fromCurrency={currencies[parsedInput.fromCurrency]}
-              isLoading={isReverseConversionLoading}
-              result={Number(result)}
-              toCurrency={currencies[parsedInput.toCurrency]}
-              handleReverse={handleReverse}
+            <Card
+              amount={{
+                fromAmount: parsedInput.fromAmount,
+                fromCurrency: currencies[parsedInput.fromCurrency],
+                toCurrency: currencies[parsedInput.toCurrency],
+                result: Number(result),
+              }}
+              iconButtonProps={{
+                "aria-label": "reverse",
+                icon: <RepeatIcon />,
+                isLoading: isReverseConversionLoading,
+                disabled: isReverseConversionLoading,
+                onClick: handleReverse,
+              }}
             />
           )}
         </VStack>
@@ -213,10 +219,17 @@ const App: FC = () => {
               </Button>
             </HStack>
             {amounts?.map((amount) => (
-              <PreviousAmount
+              <Card
                 key={amount.id}
                 amount={amount}
-                deletePreviousAmount={deletePreviousAmount}
+                boxProps={{
+                  bgColor: "gray.100",
+                }}
+                iconButtonProps={{
+                  "aria-label": "delete",
+                  icon: <CloseIcon />,
+                  onClick: () => deletePreviousAmount(amount.id),
+                }}
               />
             ))}
           </VStack>

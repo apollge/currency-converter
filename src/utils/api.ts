@@ -1,6 +1,6 @@
 import { Converted, ConvertedResponseError } from "./types";
 
-const BASE_URL = "https://api.apilayer.com/";
+const BASE_URL = "https://api.apilayer.com/exchangerates_data";
 const API_KEY = "";
 
 // TODO: what is the response type in the Promise? We should avoid using 'any'
@@ -33,7 +33,7 @@ const api: API = ({ endpoint, params = {} }) => {
 export const fetchRates = async (baseCurrency: string) => {
   try {
     const response = await api({
-      endpoint: "exchangerates_data/latest",
+      endpoint: "/latest",
       params: { base: baseCurrency },
     });
     const responseText = await response.text();
@@ -62,7 +62,7 @@ export const fetchConversion = async (params: {
 
   try {
     const response = await api({
-      endpoint: "currency_data/convert",
+      endpoint: "/convert",
       params: { from: fromCurrency, to: toCurrency, amount: fromAmount },
     });
 
@@ -79,24 +79,24 @@ export const fetchConversion = async (params: {
   }
 };
 
-export const fetchCurrencies = async () => {
+export const fetchSymbols = async () => {
   try {
     const response = await api({
-      endpoint: "currency_data/list",
+      endpoint: "/symbols",
     });
 
     const responseText = await response.text();
-    const { currencies, error } = JSON.parse(responseText);
+    const { symbols, error } = JSON.parse(responseText);
 
     if (error) {
       throw new Error(error);
     }
 
-    if (!currencies || !Object.keys(currencies).length) {
-      throw new Error("Could not fetch currencies.");
+    if (!symbols || !Object.keys(symbols).length) {
+      throw new Error("Could not fetch symbols.");
     }
 
-    return currencies;
+    return symbols;
   } catch (errorResponse) {
     throw errorResponse;
   }
