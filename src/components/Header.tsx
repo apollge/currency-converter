@@ -1,10 +1,8 @@
-import React from 'react';
-
-import './Header.css';
+import { Heading } from "@chakra-ui/react";
 
 const Header = () => (
   <header className="header">
-    <h1>Currency Converter</h1>
+    <Heading size="2xl">Currency Converter</Heading>
   </header>
 );
 
